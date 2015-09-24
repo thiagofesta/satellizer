@@ -785,7 +785,7 @@
           return store.set(key, value);
         },
         remove: function(key) {
-          return store.removeItem(key);
+          return store.remove(key);
         }
       };
     }])
