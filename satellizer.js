@@ -229,63 +229,6 @@
     })
     .provider('$auth', ['SatellizerConfig', function(config) {
 
-      //Object.defineProperties(this, {
-      //  httpInterceptor: {
-      //    get: function() { return config.httpInterceptor; },
-      //    set: function(value) { config.httpInterceptor = value; }
-      //  },
-      //  baseUrl: {
-      //    get: function() { return config.baseUrl; },
-      //    set: function(value) { console.log(value); config.baseUrl = value; }
-      //  },
-      //  loginUrl: {
-      //    get: function() { return config.loginUrl; },
-      //    set: function(value) { config.loginUrl = value; }
-      //  },
-      //  signupUrl: {
-      //    get: function() { return config.signupUrl; },
-      //    set: function(value) { config.signupUrl = value; }
-      //  },
-      //  tokenRoot: {
-      //    get: function() { return config.tokenRoot; },
-      //    set: function(value) { config.tokenRoot = value; }
-      //  },
-      //  tokenName: {
-      //    get: function() { return config.tokenName; },
-      //    set: function(value) { config.tokenName = value; }
-      //  },
-      //  tokenPrefix: {
-      //    get: function() { return config.tokenPrefix; },
-      //    set: function(value) { config.tokenPrefix = value; }
-      //  },
-      //  unlinkUrl: {
-      //    get: function() { return config.unlinkUrl; },
-      //    set: function(value) { config.unlinkUrl = value; }
-      //  },
-      //  authHeader: {
-      //    get: function() { return config.authHeader; },
-      //    set: function(value) { config.authHeader = value; }
-      //  },
-      //  authToken: {
-      //    get: function() { return config.authToken; },
-      //    set: function(value) { config.authToken = value; }
-      //  },
-      //  withCredentials: {
-      //    get: function() { return config.withCredentials; },
-      //    set: function(value) { config.withCredentials = value; }
-      //  },
-      //  cordova: {
-      //    get: function() { return config.cordova; },
-      //    set: function(value) { config.cordova = value; }
-      //  },
-      //  storageType: {
-      //    get: function() { return config.storageType; },
-      //    set: function(value) { config.storageType = value; }
-      //  }
-      //});
-      //
-      //console.log(this);
-
       var self = this;
 
       var keys = [
@@ -313,11 +256,8 @@
         }
       });
 
-
-
       angular.forEach(Object.keys(config.providers), function(provider) {
         this[provider] = function(params) {
-          console.log(this.baseUrl);
           return angular.extend(config.providers[provider], params);
         };
       }, this);
@@ -548,7 +488,6 @@
         Local.login = function(user, opts) {
           opts = opts || {};
           opts.url = config.baseUrl ? utils.joinUrl(config.baseUrl, config.loginUrl) : config.loginUrl;
-          console.log(opts.url);
           opts.data = user || opts.data;
           opts.method = opts.method || 'POST';
 
