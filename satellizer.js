@@ -280,7 +280,7 @@
           if (token && token.split('.').length === 3) {
             var base64Url = token.split('.')[1];
             var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            return JSON.parse(decodeURIComponent(escape(window.atob(base64))));
+            return JSON.parse(decodeURIComponent(encodeURI(window.atob(base64))));
           }
         };
 
@@ -373,7 +373,7 @@
               shared.setToken(response, false);
               deferred.resolve(response);
             })
-            .catch(function(error) {
+            ['catch'](function(error) {
               deferred.reject(error);
             });
 
@@ -509,7 +509,7 @@
                   data[value] = defaults.redirectUri;
                   break;
                 default:
-                  data[value] = oauthData[key]
+                  data[value] = oauthData[key];
               }
             });
 
@@ -801,7 +801,7 @@
 
         }
         return result;
-      }
+      };
     })
     .factory('SatellizerStorage', ['$window', 'SatellizerConfig', function($window, config) {
       var isStorageAvailable = (function() {
