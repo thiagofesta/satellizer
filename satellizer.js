@@ -6,7 +6,108 @@
 (function(window, angular, undefined) {
   'use strict';
 
-  angular.module('satellizer', [])
+  // ES 15.2.3.6 Object.defineProperty ( O, P, Attributes )
+  // Partial support for most common case - getters, setters, and values
+  (function() {
+    if (!Object.defineProperty ||
+      !(function () { try { Object.defineProperty({}, 'x', {}); return true; } catch (e) { return false; } } ())) {
+      var orig = Object.defineProperty;
+      Object.defineProperty = function (o, prop, desc) {
+        // In IE8 try built-in implementation for defining properties on DOM prototypes.
+        if (orig) { try { return orig(o, prop, desc); } catch (e) {} }
+
+        if (o !== Object(o)) { throw TypeError("Object.defineProperty called on non-object"); }
+        if (Object.prototype.__defineGetter__ && ('get' in desc)) {
+          Object.prototype.__defineGetter__.call(o, prop, desc.get);
+        }
+        if (Object.prototype.__defineSetter__ && ('set' in desc)) {
+          Object.prototype.__defineSetter__.call(o, prop, desc.set);
+        }
+        if ('value' in desc) {
+          o[prop] = desc.value;
+        }
+        return o;
+      };
+    }
+  }());
+
+  // ES 15.2.3.7 Object.defineProperties ( O, Properties )
+  if (typeof Object.defineProperties !== "function") {
+    Object.defineProperties = function (o, properties) {
+      if (o !== Object(o)) { throw TypeError("Object.defineProperties called on non-object"); }
+      var name;
+      for (name in properties) {
+        if (Object.prototype.hasOwnProperty.call(properties, name)) {
+          Object.defineProperty(o, name, properties[name]);
+        }
+      }
+      return o;
+    };
+  }
+
+
+  //function defineProperties(obj, properties) {
+  //  function convertToDescriptor(desc) {
+  //    function hasProperty(obj, prop) {
+  //      return Object.prototype.hasOwnProperty.call(obj, prop);
+  //    }
+  //
+  //    function isCallable(v) {
+  //      // NB: modify as necessary if other values than functions are callable.
+  //      return typeof v === "function";
+  //    }
+  //
+  //    if (typeof desc !== "object" || desc === null)
+  //      throw new TypeError("bad desc");
+  //
+  //    var d = {};
+  //
+  //    if (hasProperty(desc, "enumerable"))
+  //      d.enumerable = !!obj.enumerable;
+  //    if (hasProperty(desc, "configurable"))
+  //      d.configurable = !!obj.configurable;
+  //    if (hasProperty(desc, "value"))
+  //      d.value = obj.value;
+  //    if (hasProperty(desc, "writable"))
+  //      d.writable = !!desc.writable;
+  //    if (hasProperty(desc, "get")) {
+  //      var g = desc.get;
+  //
+  //      if (!isCallable(g) && typeof g !== "undefined")
+  //        throw new TypeError("bad get");
+  //      d.get = g;
+  //    }
+  //    if (hasProperty(desc, "set")) {
+  //      var s = desc.set;
+  //      if (!isCallable(s) && typeof s !== "undefined")
+  //        throw new TypeError("bad set");
+  //      d.set = s;
+  //    }
+  //
+  //    if (("get" in d || "set" in d) && ("value" in d || "writable" in d))
+  //      throw new TypeError("identity-confused descriptor");
+  //
+  //    return d;
+  //  }
+  //
+  //  if (typeof obj !== "object" || obj === null)
+  //    throw new TypeError("bad obj");
+  //
+  //  properties = Object(properties);
+  //
+  //  var keys = Object.keys(properties);
+  //  var descs = [];
+  //
+  //  for (var i = 0; i < keys.length; i++)
+  //    descs.push([keys[i], convertToDescriptor(properties[keys[i]])]);
+  //
+  //  for (var i = 0; i < descs.length; i++)
+  //    Object.defineProperty(obj, descs[i][0], descs[i][1]);
+  //
+  //  return obj;
+  //}
+
+  angular.module('satellizer', ['angular-storage'])
     .constant('SatellizerConfig', {
       httpInterceptor: true,
       withCredentials: true,
@@ -803,36 +904,16 @@
         return result;
       };
     })
-    .factory('SatellizerStorage', ['$window', 'SatellizerConfig', function($window, config) {
-      var isStorageAvailable = (function() {
-        try {
-          var supported = config.storageType in $window && $window[config.storageType] !== null;
-
-          if (supported) {
-            var key = Math.random().toString(36).substring(7);
-            $window[config.storageType].setItem(key, '');
-            $window[config.storageType].removeItem(key);
-          }
-
-          return supported;
-        } catch (e) {
-          return false;
-        }
-      })();
-
-      if (!isStorageAvailable) {
-        console.warn('Satellizer Warning: ' + config.storageType + ' is not available.');
-      }
-
+    .factory('SatellizerStorage', ['$window', 'SatellizerConfig', 'store', function($window, config, store) {
       return {
         get: function(key) {
-          return isStorageAvailable ? $window[config.storageType].getItem(key) : undefined;
+          return store.get(key);
         },
         set: function(key, value) {
-          return isStorageAvailable ? $window[config.storageType].setItem(key, value) : undefined;
+          return store.set(key, value);
         },
         remove: function(key) {
-          return isStorageAvailable ? $window[config.storageType].removeItem(key): undefined;
+          return store.removeItem(key);
         }
       };
     }])
